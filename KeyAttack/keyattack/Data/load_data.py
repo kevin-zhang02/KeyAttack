@@ -44,15 +44,20 @@ def isolator(signal, sample_rate, size, scan, before, after, threshold, show=Fal
     return strokes
 
 
-def process_audio():
-    AUDIO_FILE = 'MBPWavs/'
-    keys_s = '0123456789qwertyuiopasdfghjklzxcvbnm'
-    labels = list(keys_s)
+def process_audio(audio_folder, labels):
     keys = [k + '.wav' for k in labels]
     data_dict = {'Key': [], 'File': []}
 
+    key_count = len(keys)
+    progress = 0
+
     for i, File in enumerate(keys):
-        loc = AUDIO_FILE + File
+        if (i + 1) * 100 // key_count > progress:
+            print("Progress: ", (i + 1) * 100 // key_count, "%", sep="")
+
+        progress = (i + 1) * 100 // key_count
+
+        loc = audio_folder + File
         samples, sample_rate = librosa.load(loc, sr=None)
         # samples = samples[round(1*sample_rate):]
         strokes = []
@@ -72,7 +77,7 @@ def process_audio():
 
         idx = 0
         while idx < len(strokes):
-            if not strokes[idx].shape[1]:
+            if strokes[idx].shape[1] != 14400:
                 del strokes[idx]
             else:
                 idx += 1
@@ -81,7 +86,7 @@ def process_audio():
         data_dict['Key'] += label
         data_dict['File'] += strokes
 
-    Path(f"{AUDIO_FILE}processed").mkdir(parents=True, exist_ok=True)
+    Path(f"{audio_folder}processed").mkdir(parents=True, exist_ok=True)
 
     key_count = {}
     for key, strokes in zip(data_dict["Key"], data_dict["File"]):
@@ -93,8 +98,50 @@ def process_audio():
                 index = key_count[key]
                 key_count[key] = index + 1
 
-            wavfile.write(f"{AUDIO_FILE}processed/{key}_{index}.wav", sample_rate, stroke.numpy())
+            wavfile.write(f"{audio_folder}processed/{key}_{index}.wav", sample_rate, stroke.numpy())
 
 
 if __name__ == '__main__':
-    process_audio()
+    # process_audio('Keystroke-Datasets/MBPWavs/', '0123456789qwertyuiopasdfghjklzxcvbnm')
+    # process_audio('CurtisMBP/', [
+    #     *(str(i) for i in range(10)),
+    #     *"abcdefghijklmnopqrstuvwxyz",
+    #     "Backspace",
+    #     "CapsLock",
+    #     "Enter",
+    #     "LeftShiftDown",
+    #     "LeftShiftRelease",
+    #     "-",
+    #     ";",
+    #     "[",
+    #     "]",
+    #     "=",
+    #     "Apostrophe",
+    #     "Backslash",
+    #     "LeftAngleBracket",
+    #     "RightAngleBracket",
+    #     "Slash",
+    #     "SpaceBar",
+    #     "Tilde"
+    # ])
+    process_audio('NayanMK/', [
+        *(str(i) for i in range(10)),
+        *"abcdefghijklmnopqrstuvwxyz",
+        "Backspace",
+        "CapsLock",
+        "Enter",
+        "LeftShiftDown",
+        "LeftShiftRelease",
+        "-",
+        ";",
+        "[",
+        "]",
+        "=",
+        "Apostrophe",
+        "Backslash",
+        "LeftAngleBracket",
+        "RightAngleBracket",
+        "Slash",
+        "SpaceBar",
+        "Tilde"
+    ])
