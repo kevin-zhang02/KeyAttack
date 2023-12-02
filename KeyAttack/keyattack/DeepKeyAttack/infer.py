@@ -9,12 +9,12 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms import ToTensor, Compose
 
-from KeyAttackSampleData.keyattacksampledata.DeepKeyAttack.CoAtNet import \
+from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
     CoAtNet
-from KeyAttackSampleData.keyattacksampledata.DeepKeyAttack.target_index import \
+from KeyAttack.keyattack.DeepKeyAttack.target_index import \
     TargetIndexing
-from KeyAttackSampleData.keyattacksampledata.DeepKeyAttack.train import \
-    MODEL_PATH, AUDIO_DIR, ToMelSpectrogram
+from KeyAttack.keyattack.DeepKeyAttack.train import \
+    MODEL_PATHS, AUDIO_DIRS, ToMelSpectrogram, DATA_INDEX, LABEL_COUNTS
 
 
 # assuming model and transform functions are already defined
@@ -44,14 +44,14 @@ class PredictDataset(torch.utils.data.Dataset):
 
 
 def load_model(path):
-    model = CoAtNet()  # should match the architecture of the trained model
+    model = CoAtNet(LABEL_COUNTS[DATA_INDEX])  # should match the architecture of the trained model
     model.load_state_dict(torch.load(path))
     model.eval()
     return model
 
 
 def predict(audio_paths):
-    model = load_model(os.path.join(MODEL_PATH, "Model"))
+    model = load_model(MODEL_PATHS[DATA_INDEX])
 
     transform = transforms.Compose([
         Compose([ToMelSpectrogram(), ToTensor()])
@@ -72,11 +72,12 @@ def predict(audio_paths):
 
 
 def main():
-    audio_dir_contents = os.listdir(AUDIO_DIR)
-    audio_paths = [os.path.join(AUDIO_DIR, filename) for filename in audio_dir_contents]
+    audio_dir = AUDIO_DIRS[DATA_INDEX]
+    audio_dir_contents = os.listdir(audio_dir)
+    audio_paths = [os.path.join(audio_dir, filename) for filename in audio_dir_contents]
     predictions = predict(audio_paths)
 
-    with open(os.path.join(MODEL_PATH, "LabelIndices"), 'r') as f:
+    with open(MODEL_PATHS[DATA_INDEX] + "LabelIndices", 'r') as f:
         target_indexing = TargetIndexing(json.load(f))
 
     predictions = [target_indexing.get_target(prediction) for prediction in predictions]

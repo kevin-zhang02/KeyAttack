@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 
 import torch
 import torch.nn as nn
@@ -12,14 +13,27 @@ import matplotlib.pyplot as plt
 import librosa
 import os
 
-from KeyAttackSampleData.keyattacksampledata.DeepKeyAttack.CoAtNet import \
+from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
     CoAtNet
-from KeyAttackSampleData.keyattacksampledata.DeepKeyAttack.target_index import \
+from KeyAttack.keyattack.DeepKeyAttack.target_index import \
     TargetIndexing
 
 # Assume we have the following paths. Depend on your system, it could vary
-AUDIO_DIR = os.path.abspath('../Keystroke-Datasets/MBPWavs/processed')
-MODEL_PATH = os.path.abspath('..')
+AUDIO_DIRS = [
+    os.path.abspath('../Data/Keystroke-Datasets/MBPWavs/processed'),
+    os.path.abspath('../Data/CurtisMBP/processed'),
+    os.path.abspath('../Data/NayanMK/processed')
+]
+
+MODEL_PATHS = [
+    os.path.abspath('../SampleDataModel'),
+    os.path.abspath('../CurtisMBPModel'),
+    os.path.abspath('../NayanMKModel')
+]
+
+LABEL_COUNTS = [36, 53, 53]
+
+DATA_INDEX = 2
 
 
 # The following class help transform our input into mel-spectrogram
@@ -59,13 +73,13 @@ def train():
     # We will use the transformation to convert the audio into Mel spectrogram
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 
-    dataset = AudioDataset(AUDIO_DIR, transform=transform)
+    dataset = AudioDataset(AUDIO_DIRS[DATA_INDEX], transform=transform)
     targets = [data[1] for data in dataset]
     train_set, val_set = train_test_split(dataset, test_size=0.2, stratify=targets)
     train_loader = DataLoader(dataset=train_set, batch_size=16, shuffle=True)
     val_loader = DataLoader(dataset=val_set, batch_size=16, shuffle=True)
 
-    model = CoAtNet()  # Assuming we have this class implemented following the paper or using a library
+    model = CoAtNet(LABEL_COUNTS[DATA_INDEX])  # Assuming we have this class implemented following the paper or using a library
     model = model
     optimizer = optim.Adam(model.parameters(), lr=5e-4)
     criterion = nn.CrossEntropyLoss()
@@ -101,8 +115,8 @@ def train():
 
                 print(f"Validation Accuracy: {correct/total}")
 
-    torch.save(model.state_dict(), os.path.join(MODEL_PATH, "Model"))
-    with open(os.path.join(MODEL_PATH, "LabelIndices"), 'w') as f:
+    torch.save(model.state_dict(), MODEL_PATHS[DATA_INDEX])
+    with open(MODEL_PATHS[DATA_INDEX] + "LabelIndices", 'w') as f:
         json.dump(dataset.targets.labels, f)
 
 

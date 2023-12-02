@@ -1,3 +1,7 @@
+KeyMap = {
+
+}
+
 SHIFT_MAP = {
     "`": "~",
     "1": "!",
@@ -14,19 +18,19 @@ SHIFT_MAP = {
     "=": "+",
     "[": "{",
     "]": "}",
-    "\\": "|",
+    "Backslash": "|",
     ";": ":",
     "'": '"',
-    ",": "<",
-    ".": ">",
-    "/": "?",
+    "LeftAngleBracket": "<",
+    "RightAngleBracket": ">",
+    "Slash": "?",
 }
 
 
 def interpret_seq(seq: list[str]):
     """
     Interpret a list of key presses as a string
-    input: list of key presses such as ["a", "Backspace", "b", "Caps Lock", "c", "Caps Lock", "d", "e", "Shift Down", "f", "1", "Shift Release", "g"]
+    input: list of key presses such as ["a", "Backspace", "b", "CapsLock", "c", "CapsLock", "d", "e", "ShiftDown", "f", "1", "ShiftRelease", "g"]
     output: string such as "bCdeF!g"
     """
     result = []
@@ -35,15 +39,15 @@ def interpret_seq(seq: list[str]):
     for i, ch in enumerate(seq):
         if ch == "Backspace" and len(result) > 0:
             result.pop()
-        elif ch == "Caps Lock":
+        elif ch == "CapsLock":
             caps = not caps
-        elif ch == "Shift Down":
+        elif ch == "ShiftDown":
             shift = True
-        elif ch == "Shift Release":
+        elif ch == "ShiftRelease":
             shift = False
-        elif ord(ch) >= 97 and ord(ch) <= 122:  # lowercase letters
+        elif 97 <= ord(ch) <= 122:  # lowercase letters
             result.append(
-                ch.upper() if (caps ^ shift) else ch
+                ch.upper() if caps ^ shift else ch
             )  # uppercase if caps XOR shift is activated
         elif ch in SHIFT_MAP:  # numbers and symbols
             result.append(
@@ -51,7 +55,7 @@ def interpret_seq(seq: list[str]):
             )  # does not respond to caps lock
         elif ch == "Space":
             result.append(" ")
-        elif ch == "Enter" or ch == "Tab":
+        elif ch == "Enter":
             result.append("\n")
     return "".join(result)
 

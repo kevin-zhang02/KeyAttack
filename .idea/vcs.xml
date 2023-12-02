@@ -2,7 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/KeyAttackSampleData/keyattacksampledata/DeepKeyAttack" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/KeyAttackSampleData/keyattacksampledata/Keystroke-Datasets" vcs="Git" />
   </component>
 </project>
