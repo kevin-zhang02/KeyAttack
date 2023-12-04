@@ -14,11 +14,20 @@ from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
 from KeyAttack.keyattack.DeepKeyAttack.target_index import \
     TargetIndexing
 from KeyAttack.keyattack.DeepKeyAttack.train import \
-    MODEL_PATHS, AUDIO_DIRS, ToMelSpectrogram, DATA_INDEX, LABEL_COUNTS
+    MODEL_PATHS, ToMelSpectrogram, LABEL_COUNTS
 
 
 # assuming model and transform functions are already defined
 # and 'MODEL_PATH' contains the path to the trained model 
+
+TEST_AUDIO_DIRS = [
+    os.path.abspath('../Data/Keystroke-Datasets/MBPWavs/test_processed'),
+    os.path.abspath('../Data/Keystroke-Datasets/Zoom/test_processed'),
+    os.path.abspath('../Data/CurtisMBP/test_processed'),
+    os.path.abspath('../Data/NayanMK/test_processed')
+]
+
+TEST_AUDIO_DATA_INDEX = 3
 
 
 def load_audio_clip(audio_path):
@@ -44,14 +53,14 @@ class PredictDataset(torch.utils.data.Dataset):
 
 
 def load_model(path):
-    model = CoAtNet(LABEL_COUNTS[DATA_INDEX])  # should match the architecture of the trained model
+    model = CoAtNet(LABEL_COUNTS[TEST_AUDIO_DATA_INDEX])  # should match the architecture of the trained model
     model.load_state_dict(torch.load(path))
     model.eval()
     return model
 
 
 def predict(audio_paths):
-    model = load_model(MODEL_PATHS[DATA_INDEX])
+    model = load_model(MODEL_PATHS[TEST_AUDIO_DATA_INDEX])
 
     transform = transforms.Compose([
         Compose([ToMelSpectrogram(), ToTensor()])
@@ -72,12 +81,12 @@ def predict(audio_paths):
 
 
 def main():
-    audio_dir = AUDIO_DIRS[DATA_INDEX]
+    audio_dir = TEST_AUDIO_DIRS[TEST_AUDIO_DATA_INDEX]
     audio_dir_contents = os.listdir(audio_dir)
     audio_paths = [os.path.join(audio_dir, filename) for filename in audio_dir_contents]
     predictions = predict(audio_paths)
 
-    with open(MODEL_PATHS[DATA_INDEX] + "LabelIndices", 'r') as f:
+    with open(MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
         target_indexing = TargetIndexing(json.load(f))
 
     predictions = [target_indexing.get_target(prediction) for prediction in predictions]

@@ -1,3 +1,7 @@
+import glob
+import os
+import random
+from collections import Counter
 from pathlib import Path
 
 import librosa
@@ -45,13 +49,13 @@ def isolator(signal, sample_rate, size, scan, before, after, threshold, show=Fal
 
 
 def process_audio(audio_folder, labels):
-    keys = [k + '.wav' for k in labels]
-    data_dict = {'Key': [], 'File': []}
+    keys = [k + ".wav" for k in labels]
+    data_dict = {"Key": [], "File": [], "TestIndices": {}}
 
-    key_count = len(keys)
+    label_count = len(keys)
 
     for i, File in enumerate(keys):
-        print("Progress: ", (i + 1) * 100 // key_count, "% file = ", File, sep="")
+        print("Progress: ", (i + 1) * 100 // label_count, "% file = ", File, sep="")
 
         loc = audio_folder + File
         samples, sample_rate = librosa.load(loc, sr=None)
@@ -59,7 +63,7 @@ def process_audio(audio_folder, labels):
         strokes = []
         prom = 0.06
         step = 0.005
-        stroke_count = 50
+        stroke_count = STROKE_COUNTS[SOURCE_INDEX]
         while not len(strokes) == stroke_count:
             strokes = isolator(samples[1 * sample_rate:], sample_rate, 48, 24,
                                2400, 12000, prom, False)
@@ -80,66 +84,39 @@ def process_audio(audio_folder, labels):
                 idx += 1
 
         label = [labels[i]] * len(strokes)
-        data_dict['Key'] += label
-        data_dict['File'] += strokes
+        data_dict["Key"] += label
+        data_dict["File"] += strokes
 
-    Path(f"{audio_folder}processed").mkdir(parents=True, exist_ok=True)
+    label_count = Counter(data_dict["Key"])
+    for label, count in label_count.items():
+        data_dict["TestIndices"][label] = random.sample(range(count), count // 10)
 
-    key_count = {}
-    for key, strokes in zip(data_dict["Key"], data_dict["File"]):
-        for stroke in strokes:
-            if key not in key_count:
-                index = 0
-                key_count[key] = 1
-            else:
-                index = key_count[key]
-                key_count[key] = index + 1
+    empty_folder(f"{audio_folder}processed")
+    empty_folder(f"{audio_folder}test_processed")
 
-            wavfile.write(f"{audio_folder}processed/{key}_{index}.wav", sample_rate, stroke.numpy())
+    label_count = {}
+    for label, stroke in zip(data_dict["Key"], data_dict["File"]):
+        if label in label_count:
+            index = label_count[label]
+            label_count[label] += 1
+        else:
+            index = 0
+            label_count[label] = 1
+
+        if index in data_dict["TestIndices"][label]:
+            output_folder = f"{audio_folder}test_processed"
+        else:
+            output_folder = f"{audio_folder}processed"
+
+        wavfile.write(f"{output_folder}/{label}_{index}.wav", sample_rate, stroke[0].numpy())
+
+
+def empty_folder(path):
+    Path(path).mkdir(parents=True, exist_ok=True)
+    files = glob.glob(f"{path}/*")
+    for f in files:
+        os.remove(f)
 
 
 if __name__ == '__main__':
-    # process_audio('Keystroke-Datasets/MBPWavs/', '0123456789qwertyuiopasdfghjklzxcvbnm')
-    # process_audio('Keystroke-Datasets/Zoom/', '0123456789qwertyuiopasdfghjklzxcvbnm')
-    process_audio('CurtisMBP/', [
-        *(str(i) for i in range(10)),
-        *"abcdefghijklmnopqrstuvwxyz",
-        "Backspace",
-        "CapsLock",
-        "Enter",
-        "ShiftDown",
-        "ShiftRelease",
-        "-",
-        ";",
-        "[",
-        "]",
-        "=",
-        "'",
-        "Backslash",
-        ",",
-        "Period",
-        "ForwardSlash",
-        "Space",
-        "`"
-    ])
-    # process_audio('NayanMK/', [
-    #     *(str(i) for i in range(10)),
-    #     *"abcdefghijklmnopqrstuvwxyz",
-    #     "Backspace",
-    #     "CapsLock",
-    #     "Enter",
-    #     "ShiftDown",
-    #     "ShiftRelease",
-    #     "-",
-    #     ";",
-    #     "[",
-    #     "]",
-    #     "=",
-    #     "'",
-    #     "Backslash",
-    #     ",",
-    #     "Period",
-    #     "ForwardSlash",
-    #     "Space",
-    #     "`"
-    # ])
+    process_audio(DATA_PATHS[SOURCE_INDEX], DATA_LABELS[SOURCE_INDEX])

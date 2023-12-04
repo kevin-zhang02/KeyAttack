@@ -27,15 +27,15 @@ AUDIO_DIRS = [
 ]
 
 MODEL_PATHS = [
-    os.path.abspath('../SampleDataMBPModel'),
-    os.path.abspath('../SampleDataZoomModel'),
-    os.path.abspath('../CurtisMBPModel'),
-    os.path.abspath('../NayanMKModel')
+    os.path.abspath('../Models/SampleDataMBPModel'),
+    os.path.abspath('../Models/SampleDataZoomModel'),
+    os.path.abspath('../Models/CurtisMBPModel'),
+    os.path.abspath('../Models/NayanMKModel')
 ]
 
 LABEL_COUNTS = [36, 36, 53, 53]
 
-DATA_INDEX = 2
+DATA_INDEX = 3
 
 
 # The following class help transform our input into mel-spectrogram

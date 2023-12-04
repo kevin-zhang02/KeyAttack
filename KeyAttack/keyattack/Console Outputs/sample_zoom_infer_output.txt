@@ -1,0 +1,4 @@
+C:\Users\yayke\AppData\Local\pypoetry\Cache\virtualenvs\keyattacksampledata--0tpBxaV-py3.10\lib\site-packages\torch\nn\modules\transformer.py:282: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.self_attn.batch_first was not True(use batch_first for better inference performance)
+  warnings.warn(f"enable_nested_tensor is True, but self.use_nested_tensor is False because {why_not_sparsity_fast_path}")
+['0', '0', '8', '1', 'x', '1', '1', '3', 'f', '4', '5', '5', 'y', '6', '6', '6', 'i', '6', 'o', '9', '1', 'b', 'r', 'r', 'c', 'c', 'f', 'd', 'e', '3', 'f', 'f', 'g', 't', 'h', 'n', 'i', 'i', 'k', 'u', '9', '5', 'l', 'v', 'm', '6', 'n', 'n', 'o', 'o', 'p', '9', 'y', '5', 't', 'r', 's', 'a', '5', 't', 'y', 'u', 'g', 'v', '4', 'w', 'c', 'r', 'y', 'y', 'z', 'z']
+0.5
