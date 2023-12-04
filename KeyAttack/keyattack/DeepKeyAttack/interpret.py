@@ -21,9 +21,9 @@ SHIFT_MAP = {
     "Backslash": "|",
     ";": ":",
     "'": '"',
-    "LeftAngleBracket": "<",
-    "RightAngleBracket": ">",
-    "Slash": "?",
+    ",": "<",
+    "Period": ">",
+    "ForwardSlash": "?",
 }
 
 

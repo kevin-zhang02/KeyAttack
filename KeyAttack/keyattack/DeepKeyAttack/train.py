@@ -21,17 +21,19 @@ from KeyAttack.keyattack.DeepKeyAttack.target_index import \
 # Assume we have the following paths. Depend on your system, it could vary
 AUDIO_DIRS = [
     os.path.abspath('../Data/Keystroke-Datasets/MBPWavs/processed'),
+    os.path.abspath('../Data/Keystroke-Datasets/Zoom/processed'),
     os.path.abspath('../Data/CurtisMBP/processed'),
     os.path.abspath('../Data/NayanMK/processed')
 ]
 
 MODEL_PATHS = [
-    os.path.abspath('../SampleDataModel'),
+    os.path.abspath('../SampleDataMBPModel'),
+    os.path.abspath('../SampleDataZoomModel'),
     os.path.abspath('../CurtisMBPModel'),
     os.path.abspath('../NayanMKModel')
 ]
 
-LABEL_COUNTS = [36, 53, 53]
+LABEL_COUNTS = [36, 36, 53, 53]
 
 DATA_INDEX = 2
 
@@ -39,7 +41,7 @@ DATA_INDEX = 2
 # The following class help transform our input into mel-spectrogram
 class ToMelSpectrogram:
     def __call__(self, samples):
-        return librosa.feature.melspectrogram(y=samples, n_mels=64, win_length=1024, hop_length=225)
+        return librosa.feature.melspectrogram(y=samples, n_mels=64, win_length=1024, hop_length=255)
 
 
 # This class is to load audio data and apply the transformation
@@ -50,6 +52,7 @@ class AudioDataset(torch.utils.data.Dataset):
         self.file_list = os.listdir(self.data_dir)
 
         self.targets = TargetIndexing()
+        _ = [data[1] for data in self]  # Load all targets
 
     def __len__(self):
         return len(self.file_list)
@@ -74,13 +77,12 @@ def train():
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 
     dataset = AudioDataset(AUDIO_DIRS[DATA_INDEX], transform=transform)
-    targets = [data[1] for data in dataset]
-    train_set, val_set = train_test_split(dataset, test_size=0.2, stratify=targets)
+    train_set, val_set = train_test_split(dataset, test_size=0.2)
     train_loader = DataLoader(dataset=train_set, batch_size=16, shuffle=True)
     val_loader = DataLoader(dataset=val_set, batch_size=16, shuffle=True)
 
     model = CoAtNet(LABEL_COUNTS[DATA_INDEX])  # Assuming we have this class implemented following the paper or using a library
-    model = model
+    model = model.cuda()
     optimizer = optim.Adam(model.parameters(), lr=5e-4)
     criterion = nn.CrossEntropyLoss()
 
@@ -89,6 +91,9 @@ def train():
     for epoch in range(num_epochs):
         model.train()
         for inputs, labels in train_loader:
+            inputs = inputs.cuda()
+            labels = labels.cuda()
+
             optimizer.zero_grad()
 
             # Forward pass
@@ -108,6 +113,8 @@ def train():
                 correct = 0
                 total = 0
                 for inputs, labels in val_loader:
+                    inputs = inputs.cuda()
+                    labels = labels.cuda()
                     outputs = model(inputs)
                     _, predicted = torch.max(outputs.data, 1)
                     total += labels.size(0)

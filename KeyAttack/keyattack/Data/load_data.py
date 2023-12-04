@@ -49,13 +49,9 @@ def process_audio(audio_folder, labels):
     data_dict = {'Key': [], 'File': []}
 
     key_count = len(keys)
-    progress = 0
 
     for i, File in enumerate(keys):
-        if (i + 1) * 100 // key_count > progress:
-            print("Progress: ", (i + 1) * 100 // key_count, "%", sep="")
-
-        progress = (i + 1) * 100 // key_count
+        print("Progress: ", (i + 1) * 100 // key_count, "% file = ", File, sep="")
 
         loc = audio_folder + File
         samples, sample_rate = librosa.load(loc, sr=None)
@@ -63,12 +59,13 @@ def process_audio(audio_folder, labels):
         strokes = []
         prom = 0.06
         step = 0.005
-        while not len(strokes) == 25:
+        stroke_count = 50
+        while not len(strokes) == stroke_count:
             strokes = isolator(samples[1 * sample_rate:], sample_rate, 48, 24,
                                2400, 12000, prom, False)
-            if len(strokes) < 25:
+            if len(strokes) < stroke_count:
                 prom -= step
-            if len(strokes) > 25:
+            if len(strokes) > stroke_count:
                 prom += step
             if prom <= 0:
                 print('-- not possible for: ', File)
@@ -103,45 +100,46 @@ def process_audio(audio_folder, labels):
 
 if __name__ == '__main__':
     # process_audio('Keystroke-Datasets/MBPWavs/', '0123456789qwertyuiopasdfghjklzxcvbnm')
-    # process_audio('CurtisMBP/', [
-    #     *(str(i) for i in range(10)),
-    #     *"abcdefghijklmnopqrstuvwxyz",
-    #     "Backspace",
-    #     "CapsLock",
-    #     "Enter",
-    #     "LeftShiftDown",
-    #     "LeftShiftRelease",
-    #     "-",
-    #     ";",
-    #     "[",
-    #     "]",
-    #     "=",
-    #     "Apostrophe",
-    #     "Backslash",
-    #     "LeftAngleBracket",
-    #     "RightAngleBracket",
-    #     "Slash",
-    #     "SpaceBar",
-    #     "Tilde"
-    # ])
-    process_audio('NayanMK/', [
+    # process_audio('Keystroke-Datasets/Zoom/', '0123456789qwertyuiopasdfghjklzxcvbnm')
+    process_audio('CurtisMBP/', [
         *(str(i) for i in range(10)),
         *"abcdefghijklmnopqrstuvwxyz",
         "Backspace",
         "CapsLock",
         "Enter",
-        "LeftShiftDown",
-        "LeftShiftRelease",
+        "ShiftDown",
+        "ShiftRelease",
         "-",
         ";",
         "[",
         "]",
         "=",
-        "Apostrophe",
+        "'",
         "Backslash",
-        "LeftAngleBracket",
-        "RightAngleBracket",
-        "Slash",
-        "SpaceBar",
-        "Tilde"
+        ",",
+        "Period",
+        "ForwardSlash",
+        "Space",
+        "`"
     ])
+    # process_audio('NayanMK/', [
+    #     *(str(i) for i in range(10)),
+    #     *"abcdefghijklmnopqrstuvwxyz",
+    #     "Backspace",
+    #     "CapsLock",
+    #     "Enter",
+    #     "ShiftDown",
+    #     "ShiftRelease",
+    #     "-",
+    #     ";",
+    #     "[",
+    #     "]",
+    #     "=",
+    #     "'",
+    #     "Backslash",
+    #     ",",
+    #     "Period",
+    #     "ForwardSlash",
+    #     "Space",
+    #     "`"
+    # ])
