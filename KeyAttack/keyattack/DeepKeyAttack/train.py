@@ -18,7 +18,7 @@ from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
 from KeyAttack.keyattack.DeepKeyAttack.target_index import \
     TargetIndexing
 
-# Assume we have the following paths. Depend on your system, it could vary
+# Directory of processed training and validation data
 AUDIO_DIRS = [
     os.path.abspath('../Data/Keystroke-Datasets/MBPWavs/processed'),
     os.path.abspath('../Data/Keystroke-Datasets/Zoom/processed'),
@@ -26,6 +26,7 @@ AUDIO_DIRS = [
     os.path.abspath('../Data/NayanMK/processed')
 ]
 
+# Directory to put models
 MODEL_PATHS = [
     os.path.abspath('../Models/SampleDataMBPModel'),
     os.path.abspath('../Models/SampleDataZoomModel'),
@@ -33,20 +34,45 @@ MODEL_PATHS = [
     os.path.abspath('../Models/NayanMKModel')
 ]
 
-LABEL_COUNTS = [36, 36, 53, 53]
+# Label count of corresponding dataset
+LABEL_COUNTS = [
+    36,
+    36,
+    53,
+    53
+]
 
+# Choose dataset to use
 DATA_INDEX = 3
 
 
-# The following class help transform our input into mel-spectrogram
 class ToMelSpectrogram:
+    """
+    The following class help transform our input into mel-spectrogram.
+
+    Code from https://github.com/soheil/DeepKeyAttack
+    """
     def __call__(self, samples):
         return librosa.feature.melspectrogram(y=samples, n_mels=64, win_length=1024, hop_length=255)
 
 
-# This class is to load audio data and apply the transformation
 class AudioDataset(torch.utils.data.Dataset):
+    """
+    This class is to load audio data and apply the transformation.
+
+    Code from https://github.com/soheil/DeepKeyAttack with changes to
+    remembering targets by Kevin Zhang.
+    """
+
     def __init__(self, data_dir, transform=None):
+        """
+        Inits data, transforms, filelist, and load targets into an array.
+
+        Code from https://github.com/soheil/DeepKeyAttack with changes to
+        remembering targets by Kevin Zhang.
+
+        :param data_dir: training and testing data
+        """
         self.data_dir = data_dir
         self.transform = transform
         self.file_list = os.listdir(self.data_dir)
@@ -58,6 +84,12 @@ class AudioDataset(torch.utils.data.Dataset):
         return len(self.file_list)
 
     def __getitem__(self, idx):
+        """
+        Gets data and give it an index.
+
+        Code from https://github.com/soheil/DeepKeyAttack with changes to
+        remembering targets by Kevin Zhang.
+        """
         waveform, _ = librosa.load(os.path.join(self.data_dir, self.file_list[idx]),
                                    sr=None,
                                    duration=1.0,
@@ -73,6 +105,18 @@ class AudioDataset(torch.utils.data.Dataset):
 
 
 def train():
+    """
+    Trains the model.
+
+    Code from https://github.com/soheil/DeepKeyAttack with changes by
+    Kevin Zhang.
+
+    Modified:
+        Removed stratify to align with the better results from the paper
+        Changed code to work with the different label counts
+        Changed code to remember label indices after execution
+    """
+
     # We will use the transformation to convert the audio into Mel spectrogram
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 

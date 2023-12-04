@@ -20,6 +20,7 @@ from KeyAttack.keyattack.DeepKeyAttack.train import \
 # assuming model and transform functions are already defined
 # and 'MODEL_PATH' contains the path to the trained model 
 
+# Test data
 TEST_AUDIO_DIRS = [
     os.path.abspath('../Data/Keystroke-Datasets/MBPWavs/test_processed'),
     os.path.abspath('../Data/Keystroke-Datasets/Zoom/test_processed'),
@@ -27,14 +28,24 @@ TEST_AUDIO_DIRS = [
     os.path.abspath('../Data/NayanMK/test_processed')
 ]
 
+# Choose dataset to use
 TEST_AUDIO_DATA_INDEX = 3
 
 
 def load_audio_clip(audio_path):
+    """
+    Loads audio clip.
+    """
     return librosa.load(audio_path, sr=None)[0]
 
 
 class PredictDataset(torch.utils.data.Dataset):
+    """
+    Dataset class used for prediction.
+
+    Code from https://github.com/soheil/DeepKeyAttack
+    """
+
     def __init__(self, audio_paths, transform=None):
         self.audio_paths = audio_paths
         self.transform = transform
@@ -53,6 +64,12 @@ class PredictDataset(torch.utils.data.Dataset):
 
 
 def load_model(path):
+    """
+    Loads model from path.
+
+    Code ffrom https://github.com/soheil/DeepKeyAttack with minor changes by
+    Kevin Zhang.
+    """
     model = CoAtNet(LABEL_COUNTS[TEST_AUDIO_DATA_INDEX])  # should match the architecture of the trained model
     model.load_state_dict(torch.load(path))
     model.eval()
@@ -60,6 +77,14 @@ def load_model(path):
 
 
 def predict(audio_paths):
+    """
+    Predicts labels from data in audio_paths.
+
+    Code from https://github.com/soheil/DeepKeyAttack
+
+    :param audio_paths: list of .wav files
+    :return: predictions
+    """
     model = load_model(MODEL_PATHS[TEST_AUDIO_DATA_INDEX])
 
     transform = transforms.Compose([
@@ -81,6 +106,13 @@ def predict(audio_paths):
 
 
 def main():
+    """
+    Tests data found in test_processed folders.
+
+    Code from https://github.com/soheil/DeepKeyAttack with changes to loading
+    audio files, loading indices for labels, and prediction accuracy by
+    Kevin Zhang.
+    """
     audio_dir = TEST_AUDIO_DIRS[TEST_AUDIO_DATA_INDEX]
     audio_dir_contents = os.listdir(audio_dir)
     audio_paths = [os.path.join(audio_dir, filename) for filename in audio_dir_contents]

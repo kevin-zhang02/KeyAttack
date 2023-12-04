@@ -1,5 +1,11 @@
+"""
+Written by Edward Ng.
+"""
+
+
 from pydub import AudioSegment
 import glob
+
 
 # load file paths
 file_extension = '*.m4a'

@@ -1,7 +1,12 @@
-KeyMap = {
-
+KEY_MAP = {
+    "Backslash": "\\",
+    "Period": ".",
+    "ForwardSlash": "/",
+    "Space": " ",
+    "Enter": "\n"
 }
 
+# Map of unshifted: shifted keys
 SHIFT_MAP = {
     "`": "~",
     "1": "!",
@@ -27,11 +32,28 @@ SHIFT_MAP = {
 }
 
 
+# Valid keys
+VALID_KEYS = (
+    *"0123456789abcdefghijklmnopqrstuvwxyz`-=[];',",
+    "Backspace",
+    "Backslash",
+    "CapsLock",
+    "Enter",
+    "Period",
+    "ForwardSlash",
+    "Space",
+    "ShiftPress",
+    "ShiftRelease"
+)
+
+
 def interpret_seq(seq: list[str]):
     """
     Interpret a list of key presses as a string
     input: list of key presses such as ["a", "Backspace", "b", "CapsLock", "c", "CapsLock", "d", "e", "ShiftDown", "f", "1", "ShiftRelease", "g"]
     output: string such as "bCdeF!g"
+
+    Code by Curtis Heizl and fixes by Kevin Zhang
     """
     result = []
     caps = False
@@ -45,18 +67,20 @@ def interpret_seq(seq: list[str]):
             shift = True
         elif ch == "ShiftRelease":
             shift = False
+        elif shift and ch in SHIFT_MAP:  # numbers and symbols
+            result.append(
+                SHIFT_MAP[ch]
+            )  # does not respond to caps lock
+        elif ch in KEY_MAP:
+            result.append(
+                KEY_MAP[ch]
+            )
         elif 97 <= ord(ch) <= 122:  # lowercase letters
             result.append(
                 ch.upper() if caps ^ shift else ch
             )  # uppercase if caps XOR shift is activated
-        elif ch in SHIFT_MAP:  # numbers and symbols
-            result.append(
-                SHIFT_MAP[ch] if shift else ch
-            )  # does not respond to caps lock
-        elif ch == "Space":
-            result.append(" ")
-        elif ch == "Enter":
-            result.append("\n")
+        else:  # Should only include characters whose
+            result.append(ch)
     return "".join(result)
 
 
@@ -66,32 +90,36 @@ def test():
             "a",
             "Backspace",
             "b",
-            "Caps Lock",
+            "CapsLock",
             "c",
-            "Caps Lock",
+            "CapsLock",
             "d",
             "e",
-            "Shift Down",
+            "ShiftDown",
             "f",
             "1",
-            "Shift Release",
+            "ShiftRelease",
             "g",
         ],
-        ["a", "Caps Lock", "\\", "b", "Shift Down", "c", "Shift Release", "d"],
-        ["[", "Shift Down", "]", "Shift Release"],
+        ["a", "CapsLock", "Backslash", "b", "ShiftDown", "c", "ShiftRelease", "d"],
+        ["[", "ShiftDown", "]", "ShiftRelease"],
         [
-            "Caps Lock",
-            "Caps Lock",
-            "Caps Lock",
+            "CapsLock",
+            "CapsLock",
+            "CapsLock",
             "0",
             "a",
-            "Caps Lock",
-            "Caps Lock",
-            "Caps Lock",
+            "CapsLock",
+            "CapsLock",
+            "CapsLock",
             "0",
             "a",
         ],
     ]
-    outputs = ["bCdeF!g", "a\BcD", "[}", "0A0a"]
+    outputs = ["bCdeF!g", "a\\BcD", "[}", "0A0a"]
     for i in range(len(inputs)):
         assert interpret_seq(inputs[i]) == outputs[i]
+
+
+if __name__ == '__main__':
+    test()
