@@ -1,5 +1,6 @@
 import glob, os, random
 
+
 def select_test_sequence(folder_path: str, labels: list[str]) -> list[str]:
     """
     Selects files from test folder to act as sequence.
@@ -36,4 +37,3 @@ def eval(sequence: list[str], labels: list[str]) -> float:
             true_positive += 1
 
     return true_positive / len(labels)
-
