@@ -12,7 +12,58 @@ from matplotlib import pyplot as plt
 from scipy.io import wavfile
 
 
+# Paths to the raw data
+DATA_PATHS = [
+    "Keystroke-Datasets/MBPWavs/",
+    "Keystroke-Datasets/Zoom/",
+    "CurtisMBP/",
+    "NayanMK/"
+]
+
+# Labels
+ALPHANUM = "0123456789abcdefghijklmnopqrstuvwxyz"
+CUSTOM_LABELS = (
+    *ALPHANUM,
+    *"-;[]=',`"
+    "Backspace",
+    "CapsLock",
+    "Enter",
+    "ShiftDown",
+    "ShiftRelease",
+    "Backslash",
+    "Period",
+    "ForwardSlash",
+    "Space",
+)
+
+# Labels corresponding to each dataset
+DATA_LABELS = [
+    ALPHANUM,
+    ALPHANUM,
+    CUSTOM_LABELS,
+    CUSTOM_LABELS
+]
+
+# Stroke count for each dataset
+STROKE_COUNTS = [
+    25,
+    25,
+    50,
+    50
+]
+
+# Change to select dataset to load
+SOURCE_INDEX = 3
+
+
 def isolator(signal, sample_rate, size, scan, before, after, threshold, show=False):
+    """
+    Isolates keystrokes in file.
+
+    Code from https://github.com/JBFH-Dev/Keystroke-Datasets
+
+    :return: list of keystrokes.
+    """
     strokes = []
     # -- signal'
     if show:
@@ -49,6 +100,15 @@ def isolator(signal, sample_rate, size, scan, before, after, threshold, show=Fal
 
 
 def process_audio(audio_folder, labels):
+    """
+    Processes audio and saves into file.
+
+    Code mostly from https://github.com/JBFH-Dev/Keystroke-Datasets,
+    file-saving and splitting test data written by Kevin Zhang.
+
+    :param audio_folder: folder containing the audio files.
+    :param labels: all labels for the data.
+    """
     keys = [k + ".wav" for k in labels]
     data_dict = {"Key": [], "File": [], "TestIndices": {}}
 
@@ -57,9 +117,12 @@ def process_audio(audio_folder, labels):
     for i, File in enumerate(keys):
         print("Progress: ", (i + 1) * 100 // label_count, "% file = ", File, sep="")
 
+        # Load data
         loc = audio_folder + File
         samples, sample_rate = librosa.load(loc, sr=None)
         # samples = samples[round(1*sample_rate):]
+
+        # Find appropriate split for data
         strokes = []
         prom = 0.06
         step = 0.005
@@ -76,6 +139,7 @@ def process_audio(audio_folder, labels):
                 break
             step = step * 0.99
 
+        # Remove incompatible data
         idx = 0
         while idx < len(strokes):
             if strokes[idx].shape[1] != 14400:
@@ -87,13 +151,17 @@ def process_audio(audio_folder, labels):
         data_dict["Key"] += label
         data_dict["File"] += strokes
 
+    # Count instances of each label
     label_count = Counter(data_dict["Key"])
     for label, count in label_count.items():
-        data_dict["TestIndices"][label] = random.sample(range(count), count // 10)
+        data_dict["TestIndices"][label] \
+            = random.sample(range(count), count // 10)
 
+    # Create empty folders to put resulting data
     empty_folder(f"{audio_folder}processed")
     empty_folder(f"{audio_folder}test_processed")
 
+    # Save data in either processed or test_processed folder
     label_count = {}
     for label, stroke in zip(data_dict["Key"], data_dict["File"]):
         if label in label_count:
@@ -108,10 +176,17 @@ def process_audio(audio_folder, labels):
         else:
             output_folder = f"{audio_folder}processed"
 
-        wavfile.write(f"{output_folder}/{label}_{index}.wav", sample_rate, stroke[0].numpy())
+        wavfile.write(
+            f"{output_folder}/{label}_{index}.wav",
+            sample_rate,
+            stroke[0].numpy()
+        )
 
 
 def empty_folder(path):
+    """
+    Creates a folder if it does not exist or remove all files if it does.
+    """
     Path(path).mkdir(parents=True, exist_ok=True)
     files = glob.glob(f"{path}/*")
     for f in files:
