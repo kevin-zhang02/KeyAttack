@@ -3,8 +3,10 @@ KEY_MAP = {
     "Period": ".",
     "ForwardSlash": "/",
     "Space": " ",
-    "Enter": "\n"
+    "Enter": "\n",
 }
+
+KEY_MAP_REVERSED = {v: k for k, v in KEY_MAP.items()}
 
 # Map of unshifted: shifted keys
 SHIFT_MAP = {
@@ -31,6 +33,8 @@ SHIFT_MAP = {
     "ForwardSlash": "?",
 }
 
+SHIFT_MAP_REVERSED = {v: k for k, v in SHIFT_MAP.items()}
+
 
 # Valid keys
 VALID_KEYS = (
@@ -43,7 +47,7 @@ VALID_KEYS = (
     "ForwardSlash",
     "Space",
     "ShiftPress",
-    "ShiftRelease"
+    "ShiftRelease",
 )
 
 
@@ -53,7 +57,7 @@ def interpret_seq(seq: list[str]):
     input: list of key presses such as ["a", "Backspace", "b", "CapsLock", "c", "CapsLock", "d", "e", "ShiftDown", "f", "1", "ShiftRelease", "g"]
     output: string such as "bCdeF!g"
 
-    Code by Curtis Heizl and fixes by Kevin Zhang
+    Code by Curtis Heinzl and fixes by Kevin Zhang
     """
     result = []
     caps = False
@@ -68,13 +72,9 @@ def interpret_seq(seq: list[str]):
         elif ch == "ShiftRelease":
             shift = False
         elif shift and ch in SHIFT_MAP:  # numbers and symbols
-            result.append(
-                SHIFT_MAP[ch]
-            )  # does not respond to caps lock
+            result.append(SHIFT_MAP[ch])  # does not respond to caps lock
         elif ch in KEY_MAP:
-            result.append(
-                KEY_MAP[ch]
-            )
+            result.append(KEY_MAP[ch])
         elif 97 <= ord(ch) <= 122:  # lowercase letters
             result.append(
                 ch.upper() if caps ^ shift else ch
@@ -84,7 +84,42 @@ def interpret_seq(seq: list[str]):
     return "".join(result)
 
 
-def test():
+def listify_string(string: str):
+    """
+    Converts a string into a list of key presses
+    Uses Shift for all uppercase and special characters
+    input: string such as "bCdeF!g"
+    output: list of key presses such as ["b", "ShiftDown", "c", "ShiftRelease", "d", "e", "ShiftDown", "f", "1", "ShiftRelease", "g"]
+    """
+    result = []
+    caps = False
+    shift = False
+    for ch in string:
+        if ch in KEY_MAP_REVERSED:  # turn special characters into the name of the key
+            ch = KEY_MAP_REVERSED[ch]
+        if ch.isupper() or ch in SHIFT_MAP.values():  # shift should be down
+            if not shift:
+                result.append("ShiftDown")
+                shift = True
+        else:  # shift should be up
+            if shift:
+                result.append("ShiftRelease")
+                shift = False
+
+        # turn shifted characters into unshifted characters
+        if ch in SHIFT_MAP_REVERSED.keys():
+            ch = SHIFT_MAP_REVERSED[ch]
+        elif len(ch) == 1:
+            ch = ch.lower()
+
+        result.append(ch)
+
+    if shift:  # release shift at end of string
+        result.append("ShiftRelease")
+    return result
+
+
+def test_interpret_seq():
     inputs = [
         [
             "a",
@@ -115,11 +150,165 @@ def test():
             "0",
             "a",
         ],
+        [
+            "ShiftDown",
+            "9",
+            "2",
+            "l",
+            "ShiftRelease",
+            "a",
+            "z",
+            "y",
+            "ShiftDown",
+            "d",
+            "ShiftRelease",
+            "o",
+            "g",
+            "ShiftDown",
+            "-",
+            "ShiftRelease",
+            "8",
+            "5",
+            "'",
+            "s",
+            "Space",
+            "p",
+            "o",
+            "s",
+            "t",
+            "ShiftDown",
+            "0",
+            "ShiftRelease",
+            "Space",
+            "ShiftDown",
+            "t",
+            "ShiftRelease",
+            "h",
+            "e",
+            "Space",
+            "q",
+            "u",
+            "i",
+            "c",
+            "k",
+            ",",
+            "Space",
+            "b",
+            "r",
+            "o",
+            "w",
+            "n",
+            "Space",
+            "f",
+            "o",
+            "x",
+            "Space",
+            "j",
+            "u",
+            "m",
+            "p",
+            "s",
+            "Space",
+            "o",
+            "v",
+            "e",
+            "r",
+            "Space",
+            "1",
+            "3",
+            "Space",
+            "l",
+            "a",
+            "z",
+            "y",
+            "Space",
+            "d",
+            "o",
+            "g",
+            "s",
+            "Space",
+            "a",
+            "t",
+            "Space",
+            "7",
+            "ShiftDown",
+            ";",
+            "ShiftRelease",
+            "0",
+            "3",
+            "Space",
+            "ShiftDown",
+            "p",
+            "m",
+            "ShiftRelease",
+            ";",
+            "Space",
+            "h",
+            "o",
+            "w",
+            "e",
+            "v",
+            "e",
+            "r",
+            ",",
+            "Space",
+            "i",
+            "t",
+            "'",
+            "s",
+            "Space",
+            "t",
+            "o",
+            "o",
+            "Space",
+            "ShiftDown",
+            "3",
+            "ShiftRelease",
+            "CapsLock",
+            "t",
+            "i",
+            "r",
+            "e",
+            "d",
+            "CapsLock",
+            "Space",
+            "t",
+            "o",
+            "Space",
+            "c",
+            "o",
+            "n",
+            "t",
+            "i",
+            "n",
+            "u",
+            "e",
+            "ShiftDown",
+            "1",
+            "ShiftRelease",
+        ],
     ]
-    outputs = ["bCdeF!g", "a\\BcD", "[}", "0A0a"]
+    outputs = [
+        "bCdeF!g",
+        "a\\BcD",
+        "[}",
+        "0A0a",
+        "(@LazyDog_85's post) The quick, brown fox jumps over 13 lazy dogs at 7:03 PM; however, it's too #TIRED to continue!",
+    ]
     for i in range(len(inputs)):
         assert interpret_seq(inputs[i]) == outputs[i]
 
 
-if __name__ == '__main__':
-    test()
+def test_listify_string():
+    inputs = [
+        # "bCdeF!g",
+        "(@LazyDog_85's post) The quick, brown fox jumps over 13 lazy dogs at 7:03 PM; however, it's too #TIRED to continue!"
+        # "Amazingly, @ 3:45 pm, Dr. Zhao exclaimed, 'E=mc^2 is REVOLUTIONARY!' & promptly emailed the news to 100+ colleagues from his MacBook Pro, adding a smiley :-) and a hashtag #PhysicsBREAKTHROUGH.",
+    ]
+    for string in inputs:
+        l = listify_string(string)
+        print(f"{l} (length {len(l)})")
+
+
+if __name__ == "__main__":
+    test_listify_string()
