@@ -1,4 +1,5 @@
 import glob
+import math
 import os
 import random
 from collections import Counter
@@ -99,18 +100,25 @@ def isolator(signal, sample_rate, size, scan, before, after, threshold, show=Fal
     return strokes
 
 
-def process_audio(audio_folder, labels):
+def process_audio(audio_folder, labels, test_data_ratio=0.):
     """
     Processes audio and saves into file.
 
     Code mostly from https://github.com/JBFH-Dev/Keystroke-Datasets,
     file-saving and splitting test data written by Kevin Zhang.
 
-    :param audio_folder: folder containing the audio files.
-    :param labels: all labels for the data.
+    :param audio_folder: folder containing the audio files
+    :param labels: all labels for the data
+    :param test_data_ratio: amount of test data
     """
+    if not 0 <= test_data_ratio <= 1:
+        raise ValueError("Test data percentage needs to be between 0 and 1!")
+
     keys = [k + ".wav" for k in labels]
-    data_dict = {"Key": [], "File": [], "TestIndices": {}}
+    data_dict = {"Key": [], "File": []}
+
+    if test_data_ratio:
+        data_dict["TestIndices"] = {}
 
     label_count = len(keys)
 
@@ -151,11 +159,13 @@ def process_audio(audio_folder, labels):
         data_dict["Key"] += label
         data_dict["File"] += strokes
 
-    # Count instances of each label
-    label_count = Counter(data_dict["Key"])
-    for label, count in label_count.items():
-        data_dict["TestIndices"][label] \
-            = random.sample(range(count), count // 10)
+    if test_data_ratio:
+        # Count instances of each label
+        label_count = Counter(data_dict["Key"])
+        for label, count in label_count.items():
+            data_dict["TestIndices"][label] \
+                = random.sample(range(count),
+                                math.floor(count * test_data_ratio))
 
     # Create empty folders to put resulting data
     empty_folder(f"{audio_folder}processed")
@@ -171,7 +181,7 @@ def process_audio(audio_folder, labels):
             index = 0
             label_count[label] = 1
 
-        if index in data_dict["TestIndices"][label]:
+        if test_data_ratio and index in data_dict["TestIndices"][label]:
             output_folder = f"{audio_folder}test_processed"
         else:
             output_folder = f"{audio_folder}processed"
@@ -194,4 +204,4 @@ def empty_folder(path):
 
 
 if __name__ == '__main__':
-    process_audio(DATA_PATHS[SOURCE_INDEX], DATA_LABELS[SOURCE_INDEX])
+    process_audio(DATA_PATHS[SOURCE_INDEX], DATA_LABELS[SOURCE_INDEX], 0.1)
