@@ -5,7 +5,7 @@ import librosa
 import numpy as np
 import torch
 from torch import nn
-from torch.utils.data import dataloader
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms import ToTensor, Compose
 
@@ -63,29 +63,31 @@ class PredictDataset(torch.utils.data.Dataset):
         return audio_clip
 
 
-def load_model(path):
+def load_model(path, label_count):
     """
     Loads model from path.
 
     Code ffrom https://github.com/soheil/DeepKeyAttack with minor changes by
     Kevin Zhang.
     """
-    model = CoAtNet(LABEL_COUNTS[TEST_AUDIO_DATA_INDEX])  # should match the architecture of the trained model
+    model = CoAtNet(label_count)  # should match the architecture of the trained model
     model.load_state_dict(torch.load(path))
     model.eval()
     return model
 
 
-def predict(audio_paths):
+def predict(audio_paths, model_path, label_count):
     """
     Predicts labels from data in audio_paths.
 
     Code from https://github.com/soheil/DeepKeyAttack
 
     :param audio_paths: list of .wav files
+    :param model_path: path to the model
+    :param label_count: the number of labels
     :return: predictions
     """
-    model = load_model(MODEL_PATHS[TEST_AUDIO_DATA_INDEX])
+    model = load_model(model_path, label_count)
 
     transform = transforms.Compose([
         Compose([ToMelSpectrogram(), ToTensor()])
@@ -116,7 +118,11 @@ def main():
     audio_dir = TEST_AUDIO_DIRS[TEST_AUDIO_DATA_INDEX]
     audio_dir_contents = os.listdir(audio_dir)
     audio_paths = [os.path.join(audio_dir, filename) for filename in audio_dir_contents]
-    predictions = predict(audio_paths)
+    predictions = predict(
+        audio_paths,
+        MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
+        LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
+    )
 
     with open(MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
         target_indexing = TargetIndexing(json.load(f))
