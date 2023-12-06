@@ -2,6 +2,7 @@ import glob
 import math
 import os
 import random
+import shutil
 from collections import Counter
 from pathlib import Path
 
@@ -128,8 +129,17 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
                                 math.floor(count * test_data_ratio))
 
     # Create empty folders to put resulting data
-    processed_folder = empty_folder(os.path.join(audio_folder, "processed"))
-    test_processed_folder = empty_folder(os.path.join(audio_folder, "test_processed"))
+    processed_folder = os.path.join(audio_folder, "processed")
+    if test_data_ratio < 1:
+        processed_folder = empty_folder(processed_folder)
+    else:
+        shutil.rmtree(processed_folder)
+
+    test_processed_folder = os.path.join(audio_folder, "test_processed")
+    if test_data_ratio:
+        test_processed_folder = empty_folder(test_processed_folder)
+    else:
+        shutil.rmtree(test_processed_folder)
 
     # Save data in either processed or test_processed folder
     label_count = {}
