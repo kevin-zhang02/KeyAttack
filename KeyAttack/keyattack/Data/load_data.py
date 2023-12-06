@@ -18,7 +18,8 @@ DATA_PATHS = [
     "Keystroke-Datasets/MBPWavs/",
     "Keystroke-Datasets/Zoom/",
     "CurtisMBP/",
-    "NayanMK/"
+    "NayanMK/",
+    "tests/demo/audio/"
 ]
 
 # Labels
@@ -35,6 +36,9 @@ CUSTOM_LABELS = (
     "Period",
     "ForwardSlash",
     "Space",
+    "demo_audio_MBP_1",
+    "demo_audio_MBP_2",
+    "demo_audio_MBP_3",
 )
 
 # Labels corresponding to each dataset
@@ -50,7 +54,7 @@ STROKE_COUNTS = [
     25,
     25,
     50,
-    50
+    50,
 ]
 
 # Change to select dataset to load
