@@ -19,7 +19,7 @@ from KeyAttack.keyattack.DeepKeyAttack.target_index import \
     TargetIndexing
 
 # Choose dataset to use
-DATA_INDEX = 3
+DATA_INDEX = 0
 
 class ToMelSpectrogram:
     """

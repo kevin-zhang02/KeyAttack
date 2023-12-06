@@ -15,7 +15,7 @@ from scipy.io import wavfile
 from KeyAttack import data_info
 
 # Change to select dataset to load
-SOURCE_INDEX = 3
+SOURCE_INDEX = 0
 
 def isolator(signal, sample_rate, size, scan, before, after, threshold, show=False):
     """
@@ -127,11 +127,8 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
                                 math.floor(count * test_data_ratio))
 
     # Create empty folders to put resulting data
-    if test_data_ratio < 1:
-        processed_folder = empty_folder(os.path.join(audio_folder, "processed"))
-
-    if test_data_ratio:
-        test_processed_folder = empty_folder(os.path.join(audio_folder, "test_processed"))
+    processed_folder = empty_folder(os.path.join(audio_folder, "processed"))
+    test_processed_folder = empty_folder(os.path.join(audio_folder, "test_processed"))
 
     # Save data in either processed or test_processed folder
     label_count = {}

@@ -15,13 +15,13 @@ from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
 from KeyAttack.keyattack.DeepKeyAttack.target_index import \
     TargetIndexing
 from KeyAttack.keyattack.DeepKeyAttack.train import ToMelSpectrogram
-
+from KeyAttack.tests.evaluate import evaluator
 
 # assuming model and transform functions are already defined
 # and 'MODEL_PATH' contains the path to the trained model
 
 # Choose dataset to use
-TEST_AUDIO_DATA_INDEX = 1
+TEST_AUDIO_DATA_INDEX = 0
 
 
 def load_audio_clip(audio_path):
@@ -99,7 +99,7 @@ def predict(audio_paths, model_path, label_count):
     return predictions
 
 
-def main():
+def main(show_conf_mat=False):
     """
     Tests data found in test_processed folders.
 
@@ -119,13 +119,19 @@ def main():
     with open(MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
         target_indexing = TargetIndexing(json.load(f))
 
-    predictions = [target_indexing.get_target(prediction) for prediction in predictions]
+    labels = [target_indexing.get_target(prediction) for prediction in predictions]
 
-    print(predictions)
+    print(labels)
 
     predictions = np.array(predictions)
-    true_labels = np.array([filename.split('_')[0] for filename in audio_dir_contents])
-    print(np.count_nonzero(predictions == true_labels) / len(audio_dir_contents))
+    true_labels = np.array([target_indexing.get_index(filename.split('_')[0])
+                            for filename in audio_dir_contents])
+
+    print(f"Accuracy: {np.count_nonzero(predictions == true_labels) / len(predictions)}")
+
+    if show_conf_mat:
+        evaluate = evaluator(predictions, true_labels, LABEL_COUNTS[TEST_AUDIO_DATA_INDEX])
+        print(evaluate)
 
 
 if __name__ == "__main__":
