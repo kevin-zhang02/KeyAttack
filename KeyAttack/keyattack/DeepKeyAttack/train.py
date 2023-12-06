@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import librosa
 import os
 
-from KeyAttack import data_info
+from KeyAttack.data_info import AUDIO_DIRS, LABEL_COUNTS, MODEL_PATHS
 from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
     CoAtNet
 from KeyAttack.keyattack.DeepKeyAttack.target_index import \
@@ -95,12 +95,12 @@ def train():
     # We will use the transformation to convert the audio into Mel spectrogram
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 
-    dataset = AudioDataset(data_info.AUDIO_DIRS[DATA_INDEX], transform=transform)
+    dataset = AudioDataset(AUDIO_DIRS[DATA_INDEX], transform=transform)
     train_set, val_set = train_test_split(dataset, test_size=0.2)
     train_loader = DataLoader(dataset=train_set, batch_size=16, shuffle=True)
     val_loader = DataLoader(dataset=val_set, batch_size=16, shuffle=True)
 
-    model = CoAtNet(data_info.LABEL_COUNTS[DATA_INDEX])  # Assuming we have this class implemented following the paper or using a library
+    model = CoAtNet(LABEL_COUNTS[DATA_INDEX])  # Assuming we have this class implemented following the paper or using a library
     model = model.cuda()
     optimizer = optim.Adam(model.parameters(), lr=5e-4)
     criterion = nn.CrossEntropyLoss()
@@ -141,8 +141,8 @@ def train():
 
                 print(f"Validation Accuracy: {correct/total}")
 
-    torch.save(model.state_dict(), data_info.MODEL_PATHS[DATA_INDEX])
-    with open(data_info.MODEL_PATHS[DATA_INDEX] + "LabelIndices", 'w') as f:
+    torch.save(model.state_dict(), MODEL_PATHS[DATA_INDEX])
+    with open(MODEL_PATHS[DATA_INDEX] + "LabelIndices", 'w') as f:
         json.dump(dataset.targets.labels, f)
 
 

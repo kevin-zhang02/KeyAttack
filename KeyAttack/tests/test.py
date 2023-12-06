@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import numpy as np
+
 import __init__
 
 import glob
@@ -7,48 +9,34 @@ import json
 import os
 import random
 
+from KeyAttack.keyattack.Data.load_data import process_audio
 from KeyAttack.keyattack.DeepKeyAttack.infer import predict
-from KeyAttack.data_info import MODEL_PATHS, LABEL_COUNTS
+from KeyAttack.data_info import MODEL_PATHS, LABEL_COUNTS, DEMO_AUDIO_FILES, \
+    DEMO_PATH, DEMO_AUDIO_PROCESSED, DEMO_AUDIO_FOLDER
+from KeyAttack.keyattack.DeepKeyAttack.target_index import TargetIndexing
+from KeyAttack.tests.evaluate import evaluator
 
 TEST_AUDIO_DATA_INDEX = 2
 
 
-def select_test_sequence(folder_path: str, labels: list[str]) -> list[str]:
+def select_test_sequence(test_folder: str, labels: list[str]) -> list[str]:
     """
     Selects files from test folder to act as sequence.
 
     Written by Edward Ng.
 
-    :param folder_path: test folder
+    :param test_folder: test folder
     :param labels: sequence of keys to test
     :return: list of filenames corresponding to label sequence
     """
 
     sequence = [None] * len(labels)
     for index, label in enumerate(labels):
-        files = glob.glob(f"{folder_path}\\{label}.wav")
+        files = glob.glob(f"{test_folder}\\{label}.wav")
         file = random.choice(files)
         sequence[index] = file
     
     return sequence
-
-
-def eval(sequence: list[str], labels: list[str]) -> float:
-    """
-    Evaluates sequence and predicted labels.
-
-    Written by Edward Ng.
-
-    :param sequence: filepaths
-    :param labels: labels
-    :return: true positive rate.
-    """
-    true_positive = 0
-    for seq_label, label in zip(sequence, labels):
-        if os.path.basename(seq_label).split('_')[0] == label:
-            true_positive += 1
-
-    return true_positive / len(labels)
 
 
 def load_demo_data(file_path):
@@ -57,8 +45,13 @@ def load_demo_data(file_path):
     return data
 
 
-def get_demo_audio_paths(demo_audio_folder):
-    demo_audio_paths = [os.path.join(demo_audio_folder, filename) for filename in os.listdir(demo_audio_folder)]
+def get_demo_audio_paths(demo_audio_folder, demo_file_stem, stroke_count):
+    demo_audio_paths = [
+        [
+            os.path.join(demo_audio_folder, f"{file_stem}_{index}.wav")
+            for index in range(stroke_count)
+        ] for file_stem in demo_file_stem
+    ]
     return demo_audio_paths
 
 
@@ -68,36 +61,48 @@ def compare_predictions_with_labels(predictions, ground_truths):
     return accuracy
 
 
-def accuracy_compare():
+def test_demo_audio():
     if not 2 <= TEST_AUDIO_DATA_INDEX <= 3:
         raise ValueError("Can only test this using "
                          "Curtis's (2) or Nayan's (3) dataset")
 
-    demo_audio_folder = os.path.abspath('demo/audio/')
-
-    # process_audio(
-    #     demo_audio_folder,
-    #     [
-    #         Path(file).stem for file in os.listdir("demo/audio")
-    #         if os.path.isfile(os.path.join(demo_audio_folder, file))
-    #     ],
-    #     133
-    # )
-
-    demo_text = "demo/demo_text.txt"
+    demo_text = os.path.join(DEMO_PATH, 'demo_text.txt')
     demo_data = load_demo_data(demo_text)
-    demo_audio_paths = get_demo_audio_paths(
-        "demo/audio/processed"
+
+    demo_file_stems = [
+        Path(file).stem for file in DEMO_AUDIO_FILES[TEST_AUDIO_DATA_INDEX]
+    ]
+
+    process_audio(
+        DEMO_AUDIO_FOLDER,
+        demo_file_stems,
+        demo_data["stroke_count"]
     )
-    predictions = predict(
-        demo_audio_paths,
-        MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
-        LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
+
+    with open(MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
+        target_indexing = TargetIndexing(json.load(f))
+
+    label_indices = [
+        target_indexing.get_index(label)
+        for label in demo_data["labels"]
+    ]
+
+    # Paths for every audio file in demo/audio
+    demo_audio_paths_all = get_demo_audio_paths(
+        DEMO_AUDIO_PROCESSED,
+        demo_file_stems,
+        demo_data["stroke_count"]
     )
-    ground_truths = demo_data.values().copy()
-    accuracy = compare_predictions_with_labels(predictions, ground_truths)
-    print(f"Accuracy: {accuracy * 100:.2f}%")
+
+    for demo_audio_paths in demo_audio_paths_all:
+        predictions = predict(
+            demo_audio_paths,
+            MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
+            LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
+        )
+        print(np.count_nonzero(np.array(predictions) == np.array(label_indices))
+              / demo_data["stroke_count"])
 
 
 if __name__ == "__main__":
-    accuracy_compare()
+    test_demo_audio()

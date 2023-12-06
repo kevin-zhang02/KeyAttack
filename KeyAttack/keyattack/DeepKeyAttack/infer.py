@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms import ToTensor, Compose
 
-from KeyAttack import data_info
+from KeyAttack.data_info import TEST_AUDIO_DIRS, MODEL_PATHS, LABEL_COUNTS
 from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
     CoAtNet
 from KeyAttack.keyattack.DeepKeyAttack.target_index import \
@@ -107,16 +107,16 @@ def main():
     audio files, loading indices for labels, and prediction accuracy by
     Kevin Zhang.
     """
-    audio_dir = data_info.TEST_AUDIO_DIRS[TEST_AUDIO_DATA_INDEX]
+    audio_dir = TEST_AUDIO_DIRS[TEST_AUDIO_DATA_INDEX]
     audio_dir_contents = os.listdir(audio_dir)
     audio_paths = [os.path.join(audio_dir, filename) for filename in audio_dir_contents]
     predictions = predict(
         audio_paths,
-        data_info.MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
-        data_info.LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
+        MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
+        LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
     )
 
-    with open(data_info.MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
+    with open(MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
         target_indexing = TargetIndexing(json.load(f))
 
     predictions = [target_indexing.get_target(prediction) for prediction in predictions]

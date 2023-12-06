@@ -42,6 +42,16 @@ DATA_PATHS = [
     os.path.join(_CUR_PATH, "keyattack/Data/NayanMK/")
 ]
 
+DEMO_PATH = os.path.join(_CUR_PATH, "tests/demo")
+DEMO_AUDIO_FOLDER = os.path.join(DEMO_PATH, "audio")
+DEMO_AUDIO_FILES = [
+    None,
+    None,
+    [os.path.join(DEMO_AUDIO_FOLDER, "demo_audio_MBP.wav")],
+    None
+]
+DEMO_AUDIO_PROCESSED = os.path.join(DEMO_AUDIO_FOLDER, "processed")
+
 # Labels
 ALPHANUM = "0123456789abcdefghijklmnopqrstuvwxyz"
 CUSTOM_LABELS = (

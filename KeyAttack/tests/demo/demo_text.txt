@@ -1,5 +1,6 @@
 {
-    "(@LazyDog_85's post) The quick, brown fox jumps over 13 lazy dogs at 7:03 PM; however, it's too #TIRED to continue!": [
+    "text": "(@LazyDog_85's post) The quick, brown fox jumps over 13 lazy dogs at 7:03 PM; however, it's too #TIRED to continue!",
+    "labels": [
         "ShiftDown", "9", "2", "l", "ShiftRelease", "a", "z", "y",
         "ShiftDown", "d", "ShiftRelease", "o", "g",
         "ShiftDown", "-", "ShiftRelease", "8", "5", "'", "s",
@@ -22,5 +23,6 @@
         "Space", "ShiftDown", "3", "ShiftRelease", "CapsLock", "t", "i", "r", "e", "d", "CapsLock",
         "Space", "t", "o",
         "Space", "c", "o", "n", "t", "i", "n", "u", "e", "ShiftDown", "1", "ShiftRelease"
-    ]
+    ],
+    "stroke_count": 135
 }
