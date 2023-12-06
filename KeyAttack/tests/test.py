@@ -5,9 +5,12 @@ import json
 import os
 import random
 
+from KeyAttack.keyattack.Data.load_data import process_audio, STROKE_COUNTS, \
+    DATA_LABELS
 from KeyAttack.keyattack.DeepKeyAttack.infer import predict
 from KeyAttack.keyattack.DeepKeyAttack.train import MODEL_PATHS, LABEL_COUNTS
-from pathlib import Path
+
+TEST_AUDIO_DATA_INDEX = 2
 
 
 def select_test_sequence(folder_path: str, labels: list[str]) -> list[str]:
@@ -64,13 +67,23 @@ def compare_predictions_with_labels(predictions, ground_truths):
     accuracy = correct_predictions / len(predictions)
     return accuracy
 
-if __name__ == "__main__":
+
+def accuracy_compare():
+    if not 2 <= TEST_AUDIO_DATA_INDEX <= 3:
+        raise ValueError("Can only test this using "
+                         "Curtis's (2) or Nayan's (3) dataset")
+
+    process_audio(
+        os.path.abspath('demo/audio/'),
+        DATA_LABELS[TEST_AUDIO_DATA_INDEX],
+        STROKE_COUNTS[TEST_AUDIO_DATA_INDEX]
+    )
+
     demo_text = "demo/demo_text.txt"
     demo_data = load_demo_data(demo_text)
     demo_audio_paths = get_demo_audio_paths(
-        os.path.abspath('tests/demo/audio/')
+        "demo/audio/processed"
     )
-    TEST_AUDIO_DATA_INDEX = 3
     predictions = predict(
         demo_audio_paths,
         MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
@@ -79,3 +92,7 @@ if __name__ == "__main__":
     ground_truths = demo_data.values().copy()
     accuracy = compare_predictions_with_labels(predictions, ground_truths)
     print(f"Accuracy: {accuracy * 100:.2f}%")
+
+
+if __name__ == "__main__":
+    accuracy_compare()

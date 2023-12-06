@@ -19,7 +19,6 @@ DATA_PATHS = [
     "Keystroke-Datasets/Zoom/",
     "CurtisMBP/",
     "NayanMK/",
-    "tests/demo/audio/"
 ]
 
 # Labels
@@ -36,9 +35,6 @@ CUSTOM_LABELS = (
     "Period",
     "ForwardSlash",
     "Space",
-    "demo_audio_MBP_1",
-    "demo_audio_MBP_2",
-    "demo_audio_MBP_3",
 )
 
 # Labels corresponding to each dataset
@@ -171,8 +167,11 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
                                 math.floor(count * test_data_ratio))
 
     # Create empty folders to put resulting data
-    empty_folder(f"{audio_folder}processed")
-    empty_folder(f"{audio_folder}test_processed")
+    if test_data_ratio < 1:
+        empty_folder(f"{audio_folder}processed")
+
+    if test_data_ratio:
+        empty_folder(f"{audio_folder}test_processed")
 
     # Save data in either processed or test_processed folder
     label_count = {}
