@@ -29,7 +29,7 @@ TEST_AUDIO_DIRS = [
 ]
 
 # Choose dataset to use
-TEST_AUDIO_DATA_INDEX = 3
+TEST_AUDIO_DATA_INDEX = 1
 
 
 def load_audio_clip(audio_path):

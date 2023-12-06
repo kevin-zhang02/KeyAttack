@@ -26,7 +26,7 @@ DATA_PATHS = [
 ALPHANUM = "0123456789abcdefghijklmnopqrstuvwxyz"
 CUSTOM_LABELS = (
     *ALPHANUM,
-    *"-;[]=',`"
+    *"-;[]=',`",
     "Backspace",
     "CapsLock",
     "Enter",
