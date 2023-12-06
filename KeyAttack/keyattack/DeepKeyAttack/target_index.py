@@ -25,3 +25,9 @@ class TargetIndexing:
         """
 
         return self.labels[ind]
+
+    def __str__(self):
+        return f"TargetIndexing({str(self.labels)})"
+
+    def __len__(self):
+        return len(self.labels)

@@ -9,24 +9,16 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms import ToTensor, Compose
 
+from KeyAttack import data_info
 from KeyAttack.keyattack.DeepKeyAttack.CoAtNet import \
     CoAtNet
 from KeyAttack.keyattack.DeepKeyAttack.target_index import \
     TargetIndexing
-from KeyAttack.keyattack.DeepKeyAttack.train import \
-    MODEL_PATHS, ToMelSpectrogram, LABEL_COUNTS
+from KeyAttack.keyattack.DeepKeyAttack.train import ToMelSpectrogram
 
 
 # assuming model and transform functions are already defined
-# and 'MODEL_PATH' contains the path to the trained model 
-
-# Test data
-TEST_AUDIO_DIRS = [
-    os.path.abspath('../Data/Keystroke-Datasets/MBPWavs/test_processed'),
-    os.path.abspath('../Data/Keystroke-Datasets/Zoom/test_processed'),
-    os.path.abspath('../Data/CurtisMBP/test_processed'),
-    os.path.abspath('../Data/NayanMK/test_processed')
-]
+# and 'MODEL_PATH' contains the path to the trained model
 
 # Choose dataset to use
 TEST_AUDIO_DATA_INDEX = 1
@@ -115,16 +107,16 @@ def main():
     audio files, loading indices for labels, and prediction accuracy by
     Kevin Zhang.
     """
-    audio_dir = TEST_AUDIO_DIRS[TEST_AUDIO_DATA_INDEX]
+    audio_dir = data_info.TEST_AUDIO_DIRS[TEST_AUDIO_DATA_INDEX]
     audio_dir_contents = os.listdir(audio_dir)
     audio_paths = [os.path.join(audio_dir, filename) for filename in audio_dir_contents]
     predictions = predict(
         audio_paths,
-        MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
-        LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
+        data_info.MODEL_PATHS[TEST_AUDIO_DATA_INDEX],
+        data_info.LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
     )
 
-    with open(MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
+    with open(data_info.MODEL_PATHS[TEST_AUDIO_DATA_INDEX] + "LabelIndices", 'r') as f:
         target_indexing = TargetIndexing(json.load(f))
 
     predictions = [target_indexing.get_target(prediction) for prediction in predictions]

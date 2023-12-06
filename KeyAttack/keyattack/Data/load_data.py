@@ -12,50 +12,10 @@ import torch
 from matplotlib import pyplot as plt
 from scipy.io import wavfile
 
-
-# Paths to the raw data
-DATA_PATHS = [
-    "Keystroke-Datasets/MBPWavs/",
-    "Keystroke-Datasets/Zoom/",
-    "CurtisMBP/",
-    "NayanMK/",
-]
-
-# Labels
-ALPHANUM = "0123456789abcdefghijklmnopqrstuvwxyz"
-CUSTOM_LABELS = (
-    *ALPHANUM,
-    *"-;[]=',`",
-    "Backspace",
-    "CapsLock",
-    "Enter",
-    "ShiftDown",
-    "ShiftRelease",
-    "Backslash",
-    "Period",
-    "ForwardSlash",
-    "Space",
-)
-
-# Labels corresponding to each dataset
-DATA_LABELS = [
-    ALPHANUM,
-    ALPHANUM,
-    CUSTOM_LABELS,
-    CUSTOM_LABELS
-]
-
-# Stroke count for each dataset
-STROKE_COUNTS = [
-    25,
-    25,
-    50,
-    50,
-]
+from KeyAttack import data_info
 
 # Change to select dataset to load
 SOURCE_INDEX = 3
-
 
 def isolator(signal, sample_rate, size, scan, before, after, threshold, show=False):
     """
@@ -122,11 +82,11 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
 
     label_count = len(keys)
 
-    for i, File in enumerate(keys):
-        print("Progress: ", (i + 1) * 100 // label_count, "% file = ", File, sep="")
+    for i, file in enumerate(keys):
+        print("Progress: ", (i + 1) * 100 // label_count, "% file = ", file, sep="")
 
         # Load data
-        loc = audio_folder + File
+        loc = os.path.join(audio_folder, file)
         samples, sample_rate = librosa.load(loc, sr=None)
         # samples = samples[round(1*sample_rate):]
 
@@ -142,7 +102,7 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
             if len(strokes) > stroke_count:
                 prom += step
             if prom <= 0:
-                print('-- not possible for: ', File)
+                print('-- not possible for: ', file)
                 break
             step = step * 0.99
 
@@ -168,10 +128,10 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
 
     # Create empty folders to put resulting data
     if test_data_ratio < 1:
-        empty_folder(f"{audio_folder}processed")
+        processed_folder = empty_folder(os.path.join(audio_folder, "processed"))
 
     if test_data_ratio:
-        empty_folder(f"{audio_folder}test_processed")
+        test_processed_folder = empty_folder(os.path.join(audio_folder, "test_processed"))
 
     # Save data in either processed or test_processed folder
     label_count = {}
@@ -184,9 +144,9 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
             label_count[label] = 1
 
         if test_data_ratio and index in data_dict["TestIndices"][label]:
-            output_folder = f"{audio_folder}test_processed"
+            output_folder = test_processed_folder
         else:
-            output_folder = f"{audio_folder}processed"
+            output_folder = processed_folder
 
         wavfile.write(
             f"{output_folder}/{label}_{index}.wav",
@@ -204,10 +164,12 @@ def empty_folder(path):
     for f in files:
         os.remove(f)
 
+    return path
+
 
 if __name__ == '__main__':
     process_audio(
-        DATA_PATHS[SOURCE_INDEX],
-        DATA_LABELS[SOURCE_INDEX],
-        STROKE_COUNTS[SOURCE_INDEX],
+        data_info.DATA_PATHS[SOURCE_INDEX],
+        data_info.DATA_LABELS[SOURCE_INDEX],
+        data_info.STROKE_COUNTS[SOURCE_INDEX],
         test_data_ratio=0.1)

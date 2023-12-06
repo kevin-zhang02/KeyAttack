@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import __init__
 
 import glob
@@ -5,10 +7,8 @@ import json
 import os
 import random
 
-from KeyAttack.keyattack.Data.load_data import process_audio, STROKE_COUNTS, \
-    DATA_LABELS
 from KeyAttack.keyattack.DeepKeyAttack.infer import predict
-from KeyAttack.keyattack.DeepKeyAttack.train import MODEL_PATHS, LABEL_COUNTS
+from KeyAttack.data_info import MODEL_PATHS, LABEL_COUNTS
 
 TEST_AUDIO_DATA_INDEX = 2
 
@@ -73,11 +73,16 @@ def accuracy_compare():
         raise ValueError("Can only test this using "
                          "Curtis's (2) or Nayan's (3) dataset")
 
-    process_audio(
-        os.path.abspath('demo/audio/'),
-        DATA_LABELS[TEST_AUDIO_DATA_INDEX],
-        STROKE_COUNTS[TEST_AUDIO_DATA_INDEX]
-    )
+    demo_audio_folder = os.path.abspath('demo/audio/')
+
+    # process_audio(
+    #     demo_audio_folder,
+    #     [
+    #         Path(file).stem for file in os.listdir("demo/audio")
+    #         if os.path.isfile(os.path.join(demo_audio_folder, file))
+    #     ],
+    #     133
+    # )
 
     demo_text = "demo/demo_text.txt"
     demo_data = load_demo_data(demo_text)
