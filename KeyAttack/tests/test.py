@@ -54,20 +54,22 @@ def load_demo_data(file_path):
     return data
 
 
-def get_absolute_paths(directory):
-    return [str(Path(directory) / file) for file in os.listdir(directory)]
+def get_demo_audio_paths(demo_audio_folder):
+    demo_audio_paths = [os.path.join(demo_audio_folder, filename) for filename in os.listdir(demo_audio_folder)]
+    return demo_audio_paths
 
 
-def evaluate_predictions(predictions, ground_truths):
-    correct_predictions = sum(pred == truth for pred, truth in zip(predictions, ground_truths))
-    accuracy = correct_predictions / len(ground_truths)
+def compare_predictions_with_labels(predictions, ground_truths):
+    correct_predictions = sum(pred == ground_truths[i] for i, pred in enumerate(predictions))
+    accuracy = correct_predictions / len(predictions)
     return accuracy
-
 
 if __name__ == "__main__":
     demo_text = "demo/demo_text.txt"
     demo_data = load_demo_data(demo_text)
-    demo_audio_paths = get_absolute_paths(demo_text)
+    demo_audio_paths = get_demo_audio_paths(
+        os.path.abspath('tests/demo/audio/')
+    )
     TEST_AUDIO_DATA_INDEX = 3
     predictions = predict(
         demo_audio_paths,
@@ -75,5 +77,5 @@ if __name__ == "__main__":
         LABEL_COUNTS[TEST_AUDIO_DATA_INDEX]
     )
     ground_truths = demo_data.values().copy()
-    accuracy = evaluate_predictions(predictions, ground_truths)
+    accuracy = compare_predictions_with_labels(predictions, ground_truths)
     print(f"Accuracy: {accuracy * 100:.2f}%")
