@@ -132,13 +132,13 @@ def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
     processed_folder = os.path.join(audio_folder, "processed")
     if test_data_ratio < 1:
         processed_folder = empty_folder(processed_folder)
-    else:
+    elif Path(processed_folder).is_dir():
         shutil.rmtree(processed_folder)
 
     test_processed_folder = os.path.join(audio_folder, "test_processed")
     if test_data_ratio:
         test_processed_folder = empty_folder(test_processed_folder)
-    else:
+    elif Path(test_processed_folder).is_dir():
         shutil.rmtree(test_processed_folder)
 
     # Save data in either processed or test_processed folder

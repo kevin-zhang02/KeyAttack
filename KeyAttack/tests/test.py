@@ -16,7 +16,7 @@ from KeyAttack.data_info import MODEL_PATHS, LABEL_COUNTS, DEMO_AUDIO_FILES, \
 from KeyAttack.keyattack.DeepKeyAttack.target_index import TargetIndexing
 from KeyAttack.tests.evaluate import evaluator
 
-TEST_AUDIO_DATA_INDEX = 2
+TEST_AUDIO_DATA_INDEX = 3
 
 
 def select_test_sequence(test_folder: str, labels: list[str]) -> list[str]:

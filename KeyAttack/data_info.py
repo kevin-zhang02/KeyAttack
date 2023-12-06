@@ -48,7 +48,7 @@ DEMO_AUDIO_FILES = [
     None,
     None,
     [os.path.join(DEMO_AUDIO_FOLDER, "demo_audio_MBP.wav")],
-    None
+    [os.path.join(DEMO_AUDIO_FOLDER, "demo_audio_MK.wav")]
 ]
 DEMO_AUDIO_PROCESSED = os.path.join(DEMO_AUDIO_FOLDER, "processed")
 
