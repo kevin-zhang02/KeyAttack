@@ -243,4 +243,5 @@ def test_listify_string():
 
 
 if __name__ == "__main__":
+    test_interpret_seq()
     test_listify_string()
