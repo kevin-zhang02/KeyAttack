@@ -100,7 +100,7 @@ def isolator(signal, sample_rate, size, scan, before, after, threshold, show=Fal
     return strokes
 
 
-def process_audio(audio_folder, labels, test_data_ratio=0.):
+def process_audio(audio_folder, labels, stroke_count, test_data_ratio=0.):
     """
     Processes audio and saves into file.
 
@@ -134,7 +134,6 @@ def process_audio(audio_folder, labels, test_data_ratio=0.):
         strokes = []
         prom = 0.06
         step = 0.005
-        stroke_count = STROKE_COUNTS[SOURCE_INDEX]
         while not len(strokes) == stroke_count:
             strokes = isolator(samples[1 * sample_rate:], sample_rate, 48, 24,
                                2400, 12000, prom, False)
@@ -204,4 +203,8 @@ def empty_folder(path):
 
 
 if __name__ == '__main__':
-    process_audio(DATA_PATHS[SOURCE_INDEX], DATA_LABELS[SOURCE_INDEX], 0.1)
+    process_audio(
+        DATA_PATHS[SOURCE_INDEX],
+        DATA_LABELS[SOURCE_INDEX],
+        STROKE_COUNTS[SOURCE_INDEX],
+        test_data_ratio=0.1)
