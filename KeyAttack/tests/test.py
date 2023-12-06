@@ -43,7 +43,7 @@ def eval(sequence: list[str], labels: list[str]) -> float:
     return true_positive / len(labels)
 
 def load_demo_data(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, 's') as file:
         data = json.load(file)
     return data
 
