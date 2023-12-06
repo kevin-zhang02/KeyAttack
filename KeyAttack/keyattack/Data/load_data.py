@@ -17,6 +17,7 @@ from KeyAttack import data_info
 # Change to select dataset to load
 SOURCE_INDEX = 0
 
+
 def isolator(signal, sample_rate, size, scan, before, after, threshold, show=False):
     """
     Isolates keystrokes in file.

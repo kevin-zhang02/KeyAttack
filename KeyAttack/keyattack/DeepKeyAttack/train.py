@@ -21,6 +21,7 @@ from KeyAttack.keyattack.DeepKeyAttack.target_index import \
 # Choose dataset to use
 DATA_INDEX = 0
 
+
 class ToMelSpectrogram:
     """
     The following class help transform our input into mel-spectrogram.

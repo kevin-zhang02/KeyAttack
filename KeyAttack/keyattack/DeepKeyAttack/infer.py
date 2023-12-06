@@ -21,7 +21,7 @@ from KeyAttack.tests.evaluate import evaluator
 # and 'MODEL_PATH' contains the path to the trained model
 
 # Choose dataset to use
-TEST_AUDIO_DATA_INDEX = 0
+TEST_AUDIO_DATA_INDEX = 2
 
 
 def load_audio_clip(audio_path):
@@ -135,4 +135,4 @@ def main(show_conf_mat=False):
 
 
 if __name__ == "__main__":
-    main()
+    main(True)
